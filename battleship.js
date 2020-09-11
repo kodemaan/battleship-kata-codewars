@@ -1,20 +1,49 @@
-function validateBattlefield(field) {
-  const ships = {
-    battleShip: 1, // size 4
-    cruisers: 2, // size 3
-    destroyers: 3, // size 2
-    submarines: 4 // size 1
+class ShipMap {
+  constructor() {
+    this.map = {};
   }
+
+  addCoordinate(col, row) {
+    if (!this.map[col]) {
+      this.map[col] = {};
+    }
+    this.map[col][row] = true;
+  }
+
+  isShip(col, row) {
+    if (!this.map[col]) {
+      return false;
+    }
+    if (this.map[col][row]) {
+      return true;
+    }
+    return false;
+  }
+}
+function validateBattlefield(field) {
+//   const ships = {
+//     battleShip: 1, // size 4
+//     cruisers: 2, // size 3
+//     destroyers: 3, // size 2
+//     submarines: 4 // size 1
+//   }
+  const shipMap = new ShipMap();
+  const ships = [];
   if (invalidPlacedShips(field)) {
     return false;
   }
   for (let row = 0; row < field.length; row++) {
     for (let col = 0; col < field[row].length; col++) {
-      if (field[row][col] === 1) {
-        const shipLength = findShipAtCoordinates(field, row, col);
+      if (field[row][col] === 1 && !shipMap.isShip(col, row)) {
+        const ship = findShipAtCoordinates(field, row, col);
+        ships.push(ship);
+        ship.coordinates.forEach(coordinate => {
+          shipMap.addCoordinate(coordinate[0], coordinate[1])
+        })
       }
     }
   }
+  ships.forEach(ship => console.log(ship.coordinates))
   return true;
 }
 
@@ -60,16 +89,44 @@ function invalidPlacedShips(field) {
 function findShipAtCoordinates(field, row, col) {
   const ship = {
       coordinates: [],
-      length: null
+      length: 1
   };
-  if (field[row][col + 1] === 0 && field[row + 1][col] === 0) {
-    ship.coordinates.push([row, col]);
+  if (getByCoordinates(field, col + 1, row) === 0 && getByCoordinates(field, col, row + 1) === 0) {
+    ship.coordinates.push([col, row]);
     return ship;
   }
   // Scan down and find all pieces of ship if applicable
-  if (field[row + 1][col] === 1) {
-    ship.coordinates.push([row + 1, col]);
+  if (getByCoordinates(field, col, row + 1) === 1) {
+    ship.coordinates.push([col, row + 1]);
     ship.length++
+    let stillAShip = true;
+    let currentRow = row + 1;
+    while (stillAShip) {
+      currentRow++;
+      if (getByCoordinates(field, col, currentRow) === 1) {
+        ship.coordinates.push([col, currentRow]);
+        ship.length++;
+      } else {
+        stillAShip = false;
+      }
+    }
+    return ship;
+  }
+  if (getByCoordinates(field, col + 1, row) === 1) {
+    ship.coordinates.push([col + 1, row]);
+    ship.length++
+    let stillAShip = true;
+    let currentCol = col + 1;
+    while (stillAShip) {
+      currentCol++;
+      if (getByCoordinates(field, col, currentCol) === 1) {
+        ship.coordinates.push([currentCol, row]);
+        ship.length++;
+      } else {
+        stillAShip = false;
+      }
+    }
+    return ship;
   }
   // Scan right and find all pieces of ship if applicable
 }
