@@ -34,6 +34,7 @@ function validateBattlefield(field) {
   }
   for (let row = 0; row < field.length; row++) {
     for (let col = 0; col < field[row].length; col++) {
+      console.log({row, col, value: field[row][col]});
       if (field[row][col] === 1 && !shipMap.isShip(col, row)) {
         const ship = findShipAtCoordinates(field, row, col);
         ships.push(ship);
@@ -97,7 +98,9 @@ function findShipAtCoordinates(field, row, col) {
   }
   // Scan down and find all pieces of ship if applicable
   if (getByCoordinates(field, col, row + 1) === 1) {
+    ship.coordinates.push([col, row]);
     ship.coordinates.push([col, row + 1]);
+    ship.length++
     ship.length++
     let stillAShip = true;
     let currentRow = row + 1;
@@ -113,7 +116,9 @@ function findShipAtCoordinates(field, row, col) {
     return ship;
   }
   if (getByCoordinates(field, col + 1, row) === 1) {
+    ship.coordinates.push([col, row]);
     ship.coordinates.push([col + 1, row]);
+    ship.length++
     ship.length++
     let stillAShip = true;
     let currentCol = col + 1;
